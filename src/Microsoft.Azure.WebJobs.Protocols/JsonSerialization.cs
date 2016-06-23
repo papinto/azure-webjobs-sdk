@@ -25,7 +25,8 @@ namespace Microsoft.Azure.WebJobs.Host.Protocols
             // This value appears to work well with both DateTimes (without time zone information) and DateTimeOffsets.
             DateParseHandling = DateParseHandling.DateTimeOffset,
             NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented
+            Formatting = Formatting.Indented,
+            TypeNameHandling = TypeNameHandling.All
         };
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.CreateDefault(JsonSerializerSettings);

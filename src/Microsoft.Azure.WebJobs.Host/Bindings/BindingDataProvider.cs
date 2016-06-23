@@ -48,7 +48,7 @@ namespace Microsoft.Azure.WebJobs.Host.Bindings
         /// <inheritdoc/>
         public IReadOnlyDictionary<string, object> GetBindingData(object value)
         {
-            if (value != null && value.GetType() != _type)
+            if (value != null && value.GetType() != _type && !value.GetType().IsSubclassOf(_type))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The supplied value was not of type '{0}'.", _type), "value");
             }
@@ -61,6 +61,19 @@ namespace Microsoft.Azure.WebJobs.Host.Bindings
             if (_bindingTemplateSource != null && value.GetType() == typeof(string))
             {
                return _bindingTemplateSource.CreateBindingData((string)value);
+            }
+            else if (value.GetType().IsSubclassOf(_type))
+            {
+                // hack - bypass the _propertyHelpers as they were taken for the base class and
+                // the derived class has different properties
+                // can _propertyHelpers be removed as it's only used here?
+                Dictionary<string, object> bindingData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                foreach (var propertyHelper in PropertyHelper.GetProperties(value.GetType()))
+                {
+                    object propertyValue = propertyHelper.GetValue(value);
+                    bindingData.Add(propertyHelper.Name, propertyValue);
+                }
+                return bindingData;
             }
             else
             {
